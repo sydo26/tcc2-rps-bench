@@ -1,0 +1,17 @@
+{
+  "library": "requests",
+  "language": "python",
+  "concurrency": 32,
+  "duration": 180,
+  "total_requests": 96452,
+  "successful_requests": 96452,
+  "failed_requests": 0,
+  "error_rate": 0.0,
+  "throughput": 535.8444444444444,
+  "latency_avg_ms": 59.68448099856483,
+  "latency_p50_ms": 52.16550827026367,
+  "latency_p95_ms": 114.00365829467773,
+  "latency_p99_ms": 153.54347229003906,
+  "latency_min_ms": 0.6618499755859375,
+  "latency_max_ms": 255.62500953674316
+}

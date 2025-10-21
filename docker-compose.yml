@@ -1,0 +1,736 @@
+version: "3.9"
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: benchmark_server
+    ports:
+      - "8080:8080"
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+  # Python - requests
+  client_requests_8:
+    build:
+      context: ./clients/python
+      dockerfile: Dockerfile
+    command: python client_requests.py
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=8
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_requests_32:
+    build:
+      context: ./clients/python
+      dockerfile: Dockerfile
+    command: python client_requests.py
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=32
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_requests_128:
+    build:
+      context: ./clients/python
+      dockerfile: Dockerfile
+    command: python client_requests.py
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=128
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_requests_512:
+    build:
+      context: ./clients/python
+      dockerfile: Dockerfile
+    command: python client_requests.py
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=512
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # Python - httpx
+  client_httpx_8:
+    build:
+      context: ./clients/python
+      dockerfile: Dockerfile
+    command: python client_httpx.py
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=8
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_httpx_32:
+    build:
+      context: ./clients/python
+      dockerfile: Dockerfile
+    command: python client_httpx.py
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=32
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_httpx_128:
+    build:
+      context: ./clients/python
+      dockerfile: Dockerfile
+    command: python client_httpx.py
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=128
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_httpx_512:
+    build:
+      context: ./clients/python
+      dockerfile: Dockerfile
+    command: python client_httpx.py
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=512
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # JavaScript - undici
+  client_undici_8:
+    build:
+      context: ./clients/javascript
+      dockerfile: Dockerfile
+    command: node client_undici.js
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=8
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_undici_32:
+    build:
+      context: ./clients/javascript
+      dockerfile: Dockerfile
+    command: node client_undici.js
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=32
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_undici_128:
+    build:
+      context: ./clients/javascript
+      dockerfile: Dockerfile
+    command: node client_undici.js
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=128
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_undici_512:
+    build:
+      context: ./clients/javascript
+      dockerfile: Dockerfile
+    command: node client_undici.js
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=512
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # JavaScript - axios
+  client_axios_8:
+    build:
+      context: ./clients/javascript
+      dockerfile: Dockerfile
+    command: node client_axios.js
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=8
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_axios_32:
+    build:
+      context: ./clients/javascript
+      dockerfile: Dockerfile
+    command: node client_axios.js
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=32
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_axios_128:
+    build:
+      context: ./clients/javascript
+      dockerfile: Dockerfile
+    command: node client_axios.js
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=128
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_axios_512:
+    build:
+      context: ./clients/javascript
+      dockerfile: Dockerfile
+    command: node client_axios.js
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=512
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # Go - net/http
+  client_nethttp_8:
+    build:
+      context: ./clients/go
+      dockerfile: Dockerfile
+    command: ./client_nethttp
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=8
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_nethttp_32:
+    build:
+      context: ./clients/go
+      dockerfile: Dockerfile
+    command: ./client_nethttp
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=32
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_nethttp_128:
+    build:
+      context: ./clients/go
+      dockerfile: Dockerfile
+    command: ./client_nethttp
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=128
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_nethttp_512:
+    build:
+      context: ./clients/go
+      dockerfile: Dockerfile
+    command: ./client_nethttp
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=512
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # Go - fasthttp
+  client_fasthttp_8:
+    build:
+      context: ./clients/go
+      dockerfile: Dockerfile
+    command: ./client_fasthttp
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=8
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_fasthttp_32:
+    build:
+      context: ./clients/go
+      dockerfile: Dockerfile
+    command: ./client_fasthttp
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=32
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_fasthttp_128:
+    build:
+      context: ./clients/go
+      dockerfile: Dockerfile
+    command: ./client_fasthttp
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=128
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_fasthttp_512:
+    build:
+      context: ./clients/go
+      dockerfile: Dockerfile
+    command: ./client_fasthttp
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=512
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # Elixir - httpoison
+  client_httpoison_8:
+    build:
+      context: ./clients/elixir
+      dockerfile: Dockerfile
+    command: elixir client_httpoison.exs
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=8
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_httpoison_32:
+    build:
+      context: ./clients/elixir
+      dockerfile: Dockerfile
+    command: elixir client_httpoison.exs
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=32
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_httpoison_128:
+    build:
+      context: ./clients/elixir
+      dockerfile: Dockerfile
+    command: elixir client_httpoison.exs
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=128
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_httpoison_512:
+    build:
+      context: ./clients/elixir
+      dockerfile: Dockerfile
+    command: elixir client_httpoison.exs
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=512
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # Elixir - finch
+  client_finch_8:
+    build:
+      context: ./clients/elixir
+      dockerfile: Dockerfile
+    command: elixir client_finch.exs
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=8
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_finch_32:
+    build:
+      context: ./clients/elixir
+      dockerfile: Dockerfile
+    command: elixir client_finch.exs
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=32
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_finch_128:
+    build:
+      context: ./clients/elixir
+      dockerfile: Dockerfile
+    command: elixir client_finch.exs
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=128
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  client_finch_512:
+    build:
+      context: ./clients/elixir
+      dockerfile: Dockerfile
+    command: elixir client_finch.exs
+    environment:
+      - SERVER_URL=http://server:8080
+      - CONCURRENCY=512
+      - WARMUP_DURATION=120
+      - TEST_DURATION=180
+    depends_on:
+      - server
+    volumes:
+      - ./results:/results
+    networks:
+      - benchnet
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+networks:
+  benchnet:
+    driver: bridge

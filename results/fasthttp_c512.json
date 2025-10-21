@@ -1,0 +1,17 @@
+{
+  "library": "fasthttp",
+  "language": "go",
+  "concurrency": 512,
+  "duration": 180,
+  "total_requests": 4796840,
+  "successful_requests": 4796840,
+  "failed_requests": 0,
+  "error_rate": 0,
+  "throughput": 26649.11111111111,
+  "latency_avg_ms": 19.202060811700573,
+  "latency_p50_ms": 15.178,
+  "latency_p95_ms": 48.599,
+  "latency_p99_ms": 79.852,
+  "latency_min_ms": 0.038,
+  "latency_max_ms": 349.654
+}

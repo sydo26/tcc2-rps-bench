@@ -1,0 +1,17 @@
+{
+  "throughput": 2235.288888888889,
+  "concurrency": 128,
+  "duration": 180,
+  "library": "httpoison",
+  "language": "elixir",
+  "total_requests": 402352,
+  "successful_requests": 402352,
+  "failed_requests": 0,
+  "error_rate": 0.0,
+  "latency_avg_ms": 57.265598282101244,
+  "latency_p50_ms": 54,
+  "latency_p95_ms": 77,
+  "latency_p99_ms": 98,
+  "latency_min_ms": 28,
+  "latency_max_ms": 140
+}

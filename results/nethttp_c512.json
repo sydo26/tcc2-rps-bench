@@ -1,0 +1,17 @@
+{
+  "library": "net/http",
+  "language": "go",
+  "concurrency": 512,
+  "duration": 180,
+  "total_requests": 1679613,
+  "successful_requests": 1679613,
+  "failed_requests": 0,
+  "error_rate": 0,
+  "throughput": 9331.183333333332,
+  "latency_avg_ms": 46.87822027633775,
+  "latency_p50_ms": 30.62,
+  "latency_p95_ms": 110.531,
+  "latency_p99_ms": 177.274,
+  "latency_min_ms": 0.073,
+  "latency_max_ms": 446.969
+}

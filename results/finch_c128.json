@@ -1,0 +1,17 @@
+{
+  "throughput": 5951.655555555555,
+  "concurrency": 128,
+  "duration": 180,
+  "library": "finch",
+  "language": "elixir",
+  "total_requests": 1071298,
+  "successful_requests": 1071298,
+  "failed_requests": 0,
+  "error_rate": 0.0,
+  "latency_avg_ms": 21.50624382758112,
+  "latency_p50_ms": 19,
+  "latency_p95_ms": 34,
+  "latency_p99_ms": 43,
+  "latency_min_ms": 0,
+  "latency_max_ms": 95
+}

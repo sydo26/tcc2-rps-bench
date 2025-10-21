@@ -1,0 +1,17 @@
+{
+  "library": "httpx",
+  "language": "python",
+  "concurrency": 512,
+  "duration": 180,
+  "total_requests": 22317,
+  "successful_requests": 22317,
+  "failed_requests": 0,
+  "error_rate": 0.0,
+  "throughput": 123.98333333333333,
+  "latency_avg_ms": 4153.700631584762,
+  "latency_p50_ms": 2677.3228645324707,
+  "latency_p95_ms": 13490.793943405151,
+  "latency_p99_ms": 20923.6261844635,
+  "latency_min_ms": 46.419382095336914,
+  "latency_max_ms": 54783.50329399109
+}
