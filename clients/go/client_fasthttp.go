@@ -48,19 +48,17 @@ func NewBenchmarkClient(url string, concurrency, duration int) *BenchmarkClient 
 		duration:    duration,
 		latencies:   make([]float64, 0),
 		client: &fasthttp.Client{
-			MaxConnsPerHost:     concurrency * 2,
+			MaxConnsPerHost:     concurrency,
 			MaxIdleConnDuration: 60 * time.Second,
 		},
 	}
 }
 
-func (bc *BenchmarkClient) makeRequest() (float64, bool) {
+func (bc *BenchmarkClient) makeRequest(req *fasthttp.Request, resp *fasthttp.Response) (float64, bool) {
 	start := time.Now()
 
-	req := fasthttp.AcquireRequest()
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseRequest(req)
-	defer fasthttp.ReleaseResponse(resp)
+	req.Reset()
+	resp.Reset()
 
 	req.SetRequestURI(bc.url)
 	req.Header.SetMethod("POST")
@@ -68,22 +66,33 @@ func (bc *BenchmarkClient) makeRequest() (float64, bool) {
 	req.SetBodyString(`{"msg":"hello"}`)
 
 	err := bc.client.DoTimeout(req, resp, 10*time.Second)
-	latency := float64(time.Since(start).Microseconds()) / 1000.0
-
+	
 	if err != nil || resp.StatusCode() != 200 {
+		latency := float64(time.Since(start).Microseconds()) / 1000.0
 		return latency, false
 	}
 
+	// Read body to ensure fair comparison (fasthttp reads automatically but we ensure it's complete)
+	_ = resp.Body()
+	
+	latency := float64(time.Since(start).Microseconds()) / 1000.0
 	return latency, true
 }
 
 func (bc *BenchmarkClient) worker(stopTime time.Time, wg *sync.WaitGroup) {
 	defer wg.Done()
+	
+	// Reuse request/response objects per worker to reduce overhead
+	req := fasthttp.AcquireRequest()
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseRequest(req)
+	defer fasthttp.ReleaseResponse(resp)
+	
 	localLatencies := make([]float64, 0, 10000)
 	var localFailures int64
 
 	for time.Now().Before(stopTime) {
-		latency, success := bc.makeRequest()
+		latency, success := bc.makeRequest(req, resp)
 		if success {
 			localLatencies = append(localLatencies, latency)
 		} else {
@@ -163,22 +172,26 @@ func main() {
 
 	// Warmup
 	log.Println("Phase 1: Warmup...")
-	warmupClient := NewBenchmarkClient(serverURL, concurrency, warmupDuration)
-	warmupClient.Run()
-	log.Printf("Warmup completed: %d requests", len(warmupClient.latencies)+int(warmupClient.failures))
+	client := NewBenchmarkClient(serverURL, concurrency, warmupDuration)
+	client.Run()
+	log.Printf("Warmup completed: %d requests", len(client.latencies)+int(client.failures))
+
+	// Reset metrics but keep connection pool
+	client.latencies = make([]float64, 0)
+	client.failures = 0
+	client.duration = testDuration
 
 	// Start collection
 	fasthttp.Post(nil, serverURL+"/control/start-collection", nil)
 
-	// Test
+	// Test (reuse same client with warm connections)
 	log.Println("Phase 2: Testing...")
-	testClient := NewBenchmarkClient(serverURL, concurrency, testDuration)
-	testClient.Run()
+	client.Run()
 
 	// Stop collection
 	fasthttp.Post(nil, serverURL+"/control/stop-collection", nil)
 
-	metrics := testClient.GetMetrics()
+	metrics := client.GetMetrics()
 
 	if metrics != nil {
 		log.Println("\n" + "============================================================")

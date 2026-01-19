@@ -52,36 +52,43 @@ func NewBenchmarkClient(url string, concurrency, duration int) *BenchmarkClient 
 			Timeout: 10 * time.Second,
 			Transport: &http.Transport{
 				MaxIdleConnsPerHost: concurrency,
-				MaxConnsPerHost:     concurrency * 2,
+				MaxConnsPerHost:     concurrency,
 			},
 		},
 	}
 }
 
-func (bc *BenchmarkClient) makeRequest() (float64, bool) {
+func (bc *BenchmarkClient) makeRequest(body *bytes.Buffer) (float64, bool) {
 	start := time.Now()
 
-	body := bytes.NewBufferString(`{"msg":"hello"}`)
+	body.Reset()
+	body.WriteString(`{"msg":"hello"}`)
 	resp, err := bc.client.Post(bc.url, "application/json", body)
 
-	latency := float64(time.Since(start).Microseconds()) / 1000.0
-
 	if err != nil {
+		latency := float64(time.Since(start).Microseconds()) / 1000.0
 		return latency, false
 	}
 	defer resp.Body.Close()
+	
+	// Read body to ensure fair comparison
 	io.Copy(io.Discard, resp.Body)
-
+	
+	latency := float64(time.Since(start).Microseconds()) / 1000.0
 	return latency, resp.StatusCode == 200
 }
 
 func (bc *BenchmarkClient) worker(stopTime time.Time, wg *sync.WaitGroup) {
 	defer wg.Done()
+	
+	// Reuse buffer per worker to reduce allocations
+	body := bytes.NewBuffer(make([]byte, 0, 32))
+	
 	localLatencies := make([]float64, 0, 10000)
 	var localFailures int64
 
 	for time.Now().Before(stopTime) {
-		latency, success := bc.makeRequest()
+		latency, success := bc.makeRequest(body)
 		if success {
 			localLatencies = append(localLatencies, latency)
 		} else {
@@ -161,22 +168,26 @@ func main() {
 
 	// Warmup
 	log.Println("Phase 1: Warmup...")
-	warmupClient := NewBenchmarkClient(serverURL, concurrency, warmupDuration)
-	warmupClient.Run()
-	log.Printf("Warmup completed: %d requests", len(warmupClient.latencies)+int(warmupClient.failures))
+	client := NewBenchmarkClient(serverURL, concurrency, warmupDuration)
+	client.Run()
+	log.Printf("Warmup completed: %d requests", len(client.latencies)+int(client.failures))
+
+	// Reset metrics but keep connection pool
+	client.latencies = make([]float64, 0)
+	client.failures = 0
+	client.duration = testDuration
 
 	// Start collection
 	http.Post(serverURL+"/control/start-collection", "application/json", nil)
 
-	// Test
+	// Test (reuse same client with warm connections)
 	log.Println("Phase 2: Testing...")
-	testClient := NewBenchmarkClient(serverURL, concurrency, testDuration)
-	testClient.Run()
+	client.Run()
 
 	// Stop collection
 	http.Post(serverURL+"/control/stop-collection", "application/json", nil)
 
-	metrics := testClient.GetMetrics()
+	metrics := client.GetMetrics()
 
 	if metrics != nil {
 		log.Println("\n" + "============================================================")

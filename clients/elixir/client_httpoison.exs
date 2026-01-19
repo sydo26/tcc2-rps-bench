@@ -14,11 +14,11 @@ defmodule BenchmarkClient do
   end
 
   def make_request(url) do
-    start = :os.system_time(:millisecond)
+    start = :os.system_time(:microsecond)
 
     case HTTPoison.post(url, Jason.encode!(%{msg: "hello"}), [{"Content-Type", "application/json"}], timeout: 10_000, recv_timeout: 10_000) do
       {:ok, %HTTPoison.Response{status_code: 200}} ->
-        {:ok, :os.system_time(:millisecond) - start}
+        {:ok, (:os.system_time(:microsecond) - start) / 1000.0}
       _ ->
         :error
     end
@@ -104,22 +104,28 @@ defmodule Main do
 
     # Warmup
     IO.puts("Phase 1: Warmup...")
-    warmup_client = BenchmarkClient.new(server_url, concurrency, warmup_duration)
-    warmup_client = BenchmarkClient.run(warmup_client)
-    IO.puts("Warmup completed: #{length(warmup_client.latencies) + warmup_client.failures} requests")
+    client = BenchmarkClient.new(server_url, concurrency, warmup_duration)
+    client = BenchmarkClient.run(client)
+    IO.puts("Warmup completed: #{length(client.latencies) + client.failures} requests")
+
+    # Reset metrics but keep connection pool
+    client = %{client | latencies: [], failures: 0, duration: test_duration}
+
+    # Force garbage collection to free warmup memory
+    :erlang.garbage_collect()
+    Process.sleep(1000)
 
     # Start collection
     HTTPoison.post("#{server_url}/control/start-collection", "")
 
-    # Test
+    # Test (reuse same client with warm connections)
     IO.puts("Phase 2: Testing...")
-    test_client = BenchmarkClient.new(server_url, concurrency, test_duration)
-    test_client = BenchmarkClient.run(test_client)
+    client = BenchmarkClient.run(client)
 
     # Stop collection
     HTTPoison.post("#{server_url}/control/stop-collection", "")
 
-    metrics = BenchmarkClient.get_metrics(test_client)
+    metrics = BenchmarkClient.get_metrics(client)
 
     if metrics do
       IO.puts("\n" <> String.duplicate("=", 60))

@@ -15,15 +15,25 @@ class BenchmarkClient {
   }
 
   async makeRequest() {
-    const start = Date.now();
+    const start = performance.now();
     try {
-      const { statusCode } = await request(this.url, {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const { statusCode, body } = await request(this.url, {
         method: "POST",
         body: JSON.stringify({ msg: "hello" }),
         headers: { "Content-Type": "application/json" },
         dispatcher: this.pool,
+        signal: controller.signal,
       });
-      const latency = Date.now() - start;
+      
+      clearTimeout(timeoutId);
+      
+      // Read body to ensure fair comparison
+      await body.text();
+      
+      const latency = performance.now() - start;
       if (statusCode === 200) {
         return { latency_ms: latency, success: true };
       }
@@ -36,7 +46,7 @@ class BenchmarkClient {
   async worker(stopTime) {
     const workerLatencies = [];
     let workerFailures = 0;
-    while (Date.now() < stopTime) {
+    while (performance.now() < stopTime) {
       const result = await this.makeRequest();
       if (result.success) {
         workerLatencies.push(result.latency_ms);
@@ -48,16 +58,14 @@ class BenchmarkClient {
   }
 
   async run() {
-    const stopTime = Date.now() + this.duration * 1000;
+    const stopTime = performance.now() + this.duration * 1000;
     const workers = Array.from({ length: this.concurrency }, () =>
       this.worker(stopTime)
     );
     const allResults = await Promise.all(workers);
     
     for (const result of allResults) {
-      for (let i = 0; i < result.workerLatencies.length; i += 10000) {
-        this.latencies.push(...result.workerLatencies.slice(i, i + 10000));
-      }
+      this.latencies = this.latencies.concat(result.workerLatencies);
       this.failures += result.workerFailures;
     }
   }
@@ -108,27 +116,30 @@ async function main() {
 
   // Warmup
   console.log("Phase 1: Warmup...");
-  const warmupClient = new BenchmarkClient(serverUrl, concurrency, warmupDuration);
-  await warmupClient.run();
-  console.log(`Warmup completed: ${warmupClient.latencies.length + warmupClient.failures} requests`);
-  await warmupClient.close();
+  const client = new BenchmarkClient(serverUrl, concurrency, warmupDuration);
+  await client.run();
+  console.log(`Warmup completed: ${client.latencies.length + client.failures} requests`);
+
+  // Reset metrics but keep connection pool (don't close!)
+  client.latencies = [];
+  client.failures = 0;
+  client.duration = testDuration;
 
   // Start collection
   try {
     await request(`${serverUrl}/control/start-collection`, { method: "POST" });
   } catch (e) {}
 
-  // Test
+  // Test (reuse same client with warm connections)
   console.log("Phase 2: Testing...");
-  const testClient = new BenchmarkClient(serverUrl, concurrency, testDuration);
-  await testClient.run();
+  await client.run();
 
   // Stop collection
   try {
     await request(`${serverUrl}/control/stop-collection`, { method: "POST" });
   } catch (e) {}
 
-  const metrics = testClient.getMetrics();
+  const metrics = client.getMetrics();
 
   if (metrics) {
     console.log("\n" + "=".repeat(60));
@@ -145,7 +156,7 @@ async function main() {
     console.log(`\nResults saved to ${outputFile}`);
   }
 
-  await testClient.close();
+  await client.close();
   process.exit(0);
 }
 

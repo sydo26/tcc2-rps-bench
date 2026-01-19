@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 services:
   server:
@@ -16,8 +16,8 @@ services:
           cpus: '2.0'
           memory: 2G
         reservations:
-          cpus: '1.0'
-          memory: 1G
+          cpus: '2.0'
+          memory: 2G
 
   # Python - requests
   client_requests_8:
@@ -39,8 +39,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_requests_32:
     build:
@@ -61,8 +61,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_requests_128:
     build:
@@ -83,8 +83,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_requests_512:
     build:
@@ -105,8 +105,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   # Python - httpx
   client_httpx_8:
@@ -128,8 +128,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_httpx_32:
     build:
@@ -150,8 +150,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_httpx_128:
     build:
@@ -172,8 +172,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_httpx_512:
     build:
@@ -194,8 +194,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   # JavaScript - undici
   client_undici_8:
@@ -217,8 +217,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_undici_32:
     build:
@@ -239,8 +239,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_undici_128:
     build:
@@ -261,8 +261,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_undici_512:
     build:
@@ -283,8 +283,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   # JavaScript - axios
   client_axios_8:
@@ -306,8 +306,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_axios_32:
     build:
@@ -328,8 +328,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_axios_128:
     build:
@@ -350,8 +350,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_axios_512:
     build:
@@ -372,8 +372,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   # Go - net/http
   client_nethttp_8:
@@ -395,8 +395,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_nethttp_32:
     build:
@@ -417,8 +417,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_nethttp_128:
     build:
@@ -439,8 +439,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_nethttp_512:
     build:
@@ -461,8 +461,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   # Go - fasthttp
   client_fasthttp_8:
@@ -484,8 +484,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_fasthttp_32:
     build:
@@ -506,8 +506,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_fasthttp_128:
     build:
@@ -528,8 +528,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_fasthttp_512:
     build:
@@ -550,8 +550,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   # Elixir - httpoison
   client_httpoison_8:
@@ -573,8 +573,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_httpoison_32:
     build:
@@ -595,8 +595,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_httpoison_128:
     build:
@@ -617,8 +617,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_httpoison_512:
     build:
@@ -639,8 +639,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   # Elixir - finch
   client_finch_8:
@@ -662,8 +662,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_finch_32:
     build:
@@ -684,8 +684,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_finch_128:
     build:
@@ -706,8 +706,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
   client_finch_512:
     build:
@@ -728,8 +728,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 512M
+          cpus: '2.0'
+          memory: 2G
 
 networks:
   benchnet:

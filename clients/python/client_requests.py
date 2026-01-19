@@ -19,23 +19,23 @@ class BenchmarkClient:
         self.session.mount('http://', adapter)
         
     def make_request(self) -> Tuple[float, bool]:
-        start = time.time()
+        start = time.perf_counter()
         try:
             response = self.session.post(
                 self.url,
                 json={"msg": "hello"},
                 timeout=10
             )
-            latency = (time.time() - start) * 1000  # ms
+            latency = (time.perf_counter() - start) * 1000  # ms
             return latency, response.status_code == 200
         except Exception:
-            latency = (time.time() - start) * 1000
+            latency = (time.perf_counter() - start) * 1000
             return latency, False
     
     def worker(self, stop_time: float) -> Tuple[List[float], int]:
         worker_latencies = []
         worker_failures = 0
-        while time.time() < stop_time:
+        while time.perf_counter() < stop_time:
             latency, success = self.make_request()
             if success:
                 worker_latencies.append(latency)
@@ -44,7 +44,7 @@ class BenchmarkClient:
         return worker_latencies, worker_failures
     
     def run(self):
-        stop_time = time.time() + self.duration
+        stop_time = time.perf_counter() + self.duration
         
         with ThreadPoolExecutor(max_workers=self.concurrency) as executor:
             futures = [
@@ -96,9 +96,14 @@ if __name__ == "__main__":
     
     # Warmup
     print("Phase 1: Warmup...")
-    warmup_client = BenchmarkClient(server_url, concurrency, warmup_duration)
-    warmup_client.run()
-    print(f"Warmup completed: {len(warmup_client.latencies) + warmup_client.failures} requests")
+    client = BenchmarkClient(server_url, concurrency, warmup_duration)
+    client.run()
+    print(f"Warmup completed: {len(client.latencies) + client.failures} requests")
+    
+    # Reset metrics but keep connection pool
+    client.latencies = []
+    client.failures = 0
+    client.duration = test_duration
     
     # Sinaliza servidor para começar coleta
     try:
@@ -106,10 +111,9 @@ if __name__ == "__main__":
     except:
         pass
     
-    # Test
+    # Test (reuse same client with warm connections)
     print("Phase 2: Testing...")
-    test_client = BenchmarkClient(server_url, concurrency, test_duration)
-    test_client.run()
+    client.run()
     
     # Sinaliza servidor para parar coleta
     try:
@@ -117,7 +121,7 @@ if __name__ == "__main__":
     except:
         pass
     
-    metrics = test_client.get_metrics()
+    metrics = client.get_metrics()
     
     if metrics:
         print("\n" + "="*60)

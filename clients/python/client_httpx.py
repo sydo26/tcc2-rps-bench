@@ -15,33 +15,36 @@ class BenchmarkClient:
         self.failures = 0
         
     async def make_request(self, client: httpx.AsyncClient) -> Tuple[float, bool]:
-        start = time.time()
+        start = time.perf_counter()
         try:
             response = await client.post(
                 self.url,
                 json={"msg": "hello"},
                 timeout=10.0
             )
-            latency = (time.time() - start) * 1000  # ms
+            latency = (time.perf_counter() - start) * 1000  # ms
             return latency, response.status_code == 200
         except Exception:
-            latency = (time.time() - start) * 1000
+            latency = (time.perf_counter() - start) * 1000
             return latency, False
     
     async def worker(self, client: httpx.AsyncClient, stop_time: float):
-        while time.time() < stop_time:
+        worker_latencies = []
+        worker_failures = 0
+        while time.perf_counter() < stop_time:
             latency, success = await self.make_request(client)
             if success:
-                self.latencies.append(latency)
+                worker_latencies.append(latency)
             else:
-                self.failures += 1
+                worker_failures += 1
+        return worker_latencies, worker_failures
     
     async def run(self):
-        stop_time = time.time() + self.duration
+        stop_time = time.perf_counter() + self.duration
         
         limits = httpx.Limits(
             max_keepalive_connections=self.concurrency,
-            max_connections=self.concurrency * 2
+            max_connections=self.concurrency
         )
         
         async with httpx.AsyncClient(limits=limits) as client:
@@ -49,7 +52,11 @@ class BenchmarkClient:
                 self.worker(client, stop_time)
                 for _ in range(self.concurrency)
             ]
-            await asyncio.gather(*tasks)
+            results = await asyncio.gather(*tasks)
+            
+            for worker_latencies, worker_failures in results:
+                self.latencies.extend(worker_latencies)
+                self.failures += worker_failures
     
     def get_metrics(self):
         if not self.latencies:
@@ -90,30 +97,34 @@ async def main():
     
     # Warmup
     print("Phase 1: Warmup...")
-    warmup_client = BenchmarkClient(server_url, concurrency, warmup_duration)
-    await warmup_client.run()
-    print(f"Warmup completed: {len(warmup_client.latencies) + warmup_client.failures} requests")
+    client = BenchmarkClient(server_url, concurrency, warmup_duration)
+    await client.run()
+    print(f"Warmup completed: {len(client.latencies) + client.failures} requests")
+    
+    # Reset metrics but keep connection pool
+    client.latencies = []
+    client.failures = 0
+    client.duration = test_duration
     
     # Sinaliza servidor para começar coleta
     try:
-        async with httpx.AsyncClient() as client:
-            await client.post(f"{server_url}/control/start-collection")
+        async with httpx.AsyncClient() as http_client:
+            await http_client.post(f"{server_url}/control/start-collection")
     except:
         pass
     
-    # Test
+    # Test (reuse same client with warm connections)
     print("Phase 2: Testing...")
-    test_client = BenchmarkClient(server_url, concurrency, test_duration)
-    await test_client.run()
+    await client.run()
     
     # Sinaliza servidor para parar coleta
     try:
-        async with httpx.AsyncClient() as client:
-            await client.post(f"{server_url}/control/stop-collection")
+        async with httpx.AsyncClient() as http_client:
+            await http_client.post(f"{server_url}/control/stop-collection")
     except:
         pass
     
-    metrics = test_client.get_metrics()
+    metrics = client.get_metrics()
     
     if metrics:
         print("\n" + "="*60)

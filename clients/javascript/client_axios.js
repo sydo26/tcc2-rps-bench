@@ -1,5 +1,7 @@
 import axios from "axios";
 import { writeFileSync, mkdirSync } from "fs";
+import http from "http";
+import https from "https";
 
 class BenchmarkClient {
   constructor(url, concurrency, duration) {
@@ -11,14 +13,22 @@ class BenchmarkClient {
     this.client = axios.create({
       timeout: 10000,
       maxRedirects: 0,
+      httpAgent: new http.Agent({
+        maxSockets: concurrency,
+        keepAlive: true,
+      }),
+      httpsAgent: new https.Agent({
+        maxSockets: concurrency,
+        keepAlive: true,
+      }),
     });
   }
 
   async makeRequest() {
-    const start = Date.now();
+    const start = performance.now();
     try {
       const response = await this.client.post(this.url, { msg: "hello" });
-      const latency = Date.now() - start;
+      const latency = performance.now() - start;
       if (response.status === 200) {
         return { latency_ms: latency, success: true };
       }
@@ -31,7 +41,7 @@ class BenchmarkClient {
   async worker(stopTime) {
     const workerLatencies = [];
     let workerFailures = 0;
-    while (Date.now() < stopTime) {
+    while (performance.now() < stopTime) {
       const result = await this.makeRequest();
       if (result.success) {
         workerLatencies.push(result.latency_ms);
@@ -43,14 +53,14 @@ class BenchmarkClient {
   }
 
   async run() {
-    const stopTime = Date.now() + this.duration * 1000;
+    const stopTime = performance.now() + this.duration * 1000;
     const workers = Array.from({ length: this.concurrency }, () =>
       this.worker(stopTime)
     );
     const allResults = await Promise.all(workers);
     
     for (const result of allResults) {
-      this.latencies.push(...result.workerLatencies);
+      this.latencies = this.latencies.concat(result.workerLatencies);
       this.failures += result.workerFailures;
     }
   }
@@ -97,26 +107,30 @@ async function main() {
 
   // Warmup
   console.log("Phase 1: Warmup...");
-  const warmupClient = new BenchmarkClient(serverUrl, concurrency, warmupDuration);
-  await warmupClient.run();
-  console.log(`Warmup completed: ${warmupClient.latencies.length + warmupClient.failures} requests`);
+  const client = new BenchmarkClient(serverUrl, concurrency, warmupDuration);
+  await client.run();
+  console.log(`Warmup completed: ${client.latencies.length + client.failures} requests`);
+
+  // Reset metrics but keep connection pool
+  client.latencies = [];
+  client.failures = 0;
+  client.duration = testDuration;
 
   // Start collection
   try {
     await axios.post(`${serverUrl}/control/start-collection`);
   } catch (e) {}
 
-  // Test
+  // Test (reuse same client with warm connections)
   console.log("Phase 2: Testing...");
-  const testClient = new BenchmarkClient(serverUrl, concurrency, testDuration);
-  await testClient.run();
+  await client.run();
 
   // Stop collection
   try {
     await axios.post(`${serverUrl}/control/stop-collection`);
   } catch (e) {}
 
-  const metrics = testClient.getMetrics();
+  const metrics = client.getMetrics();
 
   if (metrics) {
     console.log("\n" + "=".repeat(60));
